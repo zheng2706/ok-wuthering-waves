@@ -179,6 +179,7 @@ config = {
         ["src.task.SimulationTask", "SimulationTask"],
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
+        ["src.task.SmartEnhanceTask", "SmartEnhanceTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
         ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [

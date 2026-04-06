@@ -429,8 +429,47 @@ class BaseWWTask(BaseTask):
         self.click(x, y, after_sleep=0.5)
         if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
                              time_out=1):  # 看是否需要使用备用体力
-            self.click(0.70, 0.71, after_sleep=0.5)  # 点击确认
-            self.click(0.70, 0.71, after_sleep=1)
+            # Step 1: Click confirm on the first popup
+            confirm = self.ocr(0.3, 0.4, 0.7, 0.85, match='确认')
+            if confirm:
+                self.click_box(confirm, after_sleep=2)
+                logger.info("体力兑换: 第一步确认已点击")
+            else:
+                self.click(0.50, 0.66, after_sleep=2)
+                logger.info("体力兑换: 第一步使用备用坐标")
+
+            # Step 2: Quantity selection page — search ONLY bottom band (below +/- buttons)
+            self.sleep(3)
+            self.screenshot('stamina_exchange_step2')
+            all_boxes = self.ocr(0, 0, 1, 1)
+            all_texts = [(b.name, b.x, b.y, b.width, b.height) for b in (all_boxes or [])]
+            logger.info(f"体力兑换第二步 OCR全文(像素): {all_texts}")
+
+            # Only search bottom area (y=0.75~0.95) to avoid +/- buttons at y~0.71
+            step2_clicked = False
+            bottom_boxes = self.ocr(0.25, 0.75, 0.75, 0.95)
+            bottom_texts = [b.name for b in (bottom_boxes or [])]
+            logger.info(f"体力兑换第二步 底部区域: {bottom_texts}")
+            for keyword in ['兑换', '确认', '确定', '交换', '购买']:
+                matches = [b for b in (bottom_boxes or []) if keyword in b.name]
+                if matches:
+                    btn = matches[0]
+                    logger.info(f"体力兑换: 第二步底部找到 '{btn.name}' x={btn.x} y={btn.y}")
+                    self.click_box(btn, after_sleep=2)
+                    step2_clicked = True
+                    break
+            if not step2_clicked:
+                result = self.wait_click_ocr(0.25, 0.75, 0.75, 0.95,
+                                             match='确', time_out=3,
+                                             raise_if_not_found=False, after_sleep=2)
+                if result:
+                    step2_clicked = True
+                    logger.info("体力兑换: 第二步 wait_click_ocr 成功")
+                else:
+                    logger.warning("体力兑换: 第二步未找到按钮，尝试底部中心点击")
+                    self.click(0.50, 0.88, after_sleep=2)
+
+            self.sleep(1)
             self.back(after_sleep=0.5)
             self.click(x, y, after_sleep=0.5)
 

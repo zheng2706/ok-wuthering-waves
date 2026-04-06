@@ -71,3 +71,9 @@ working_images/
 repo/
 
 assets/result.json
+
+# === Custom additions: track our files that upstream ignores ===
+!configs/CharacterBuilds.json
+!scripts/
+!启动API.bat
+!启动GUI.bat
